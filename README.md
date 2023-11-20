@@ -1,4 +1,4 @@
-# Typing Game with Pygame
+# 2D Typing Shooter Game
 
 ## Overview
 

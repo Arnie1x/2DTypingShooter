@@ -9,6 +9,7 @@ canvas = pygame.display.set_mode((500, 500))
 pygame.display.set_caption("My Board") 
 exit = False
 
+# Main Game Loop
 while not exit: 
 	for event in pygame.event.get(): 
 		if event.type == pygame.QUIT: 

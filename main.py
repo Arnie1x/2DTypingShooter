@@ -11,6 +11,7 @@ pygame.display.set_caption("My Board")
 
 # Used to maintain the Game Loop
 exit = False
+start_menu = True
 
 # Initialize the Wave System for Words
 wave = 1
@@ -27,22 +28,22 @@ def show_menu():
     bg = pygame.transform.scale(bg, (850, 700))
 
     menu_font = pygame.font.Font(None, 36)
-    option1 = menu_font.render("1. Start Game", True, (255, 255, 255))
-    option2 = menu_font.render("2. Quit", True, (255, 255, 255))
+    option1 = menu_font.render("Press Space to Start", True, (255, 255, 255))
+    option2 = menu_font.render("Press Esc to Quit", True, (255, 255, 255))
 
     # Calculate the positions of the menu options
     option1_pos = option1.get_rect(center=(850 // 2, 700 // 2 - option1.get_height()))
     option2_pos = option2.get_rect(center=(850 // 2, 700 // 2 + option2.get_height()))
-
+    
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_1:
+                if event.key == pygame.K_SPACE:
                     return "start"
-                elif event.key == pygame.K_2:
+                elif event.key == pygame.K_ESCAPE:
                     return "quit"
 
         # Draw the background image
@@ -56,10 +57,14 @@ def show_menu():
 
 # Main Game Loop
 while not exit:
-    menu_selection = show_menu()
-    if menu_selection == "quit":
-        break
-    
+    if start_menu:
+        menu_selection = show_menu()
+        if menu_selection == "start":
+            start_menu = False
+        if menu_selection == "quit":
+            start_menu = False
+            break
+        
     # Update the word list if empty
     if (len(word_list) == 0):
         wave += 1
@@ -90,14 +95,9 @@ while not exit:
             typed_word = ''
             selected_word = None
 
-
-
-
-
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit = True
-        pygame.display.update()
+        pygame.display.flip()
     
     

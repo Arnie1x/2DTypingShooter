@@ -1,4 +1,5 @@
 import pygame 
+import modules.word_list_generator as generator
 
 pygame.init() 
 
@@ -9,7 +10,8 @@ canvas = pygame.display.set_mode((500, 500))
 pygame.display.set_caption("My Board") 
 exit = False
 
-word_list = ['word', 'another', 'less', 'fruit', 'brick']
+word_list = generator.generate_words(5)
+print(word_list)
 selected_word = None
 typed_word = ''
 selected_word_index = 0

@@ -65,12 +65,14 @@ def show_menu():
         pygame.display.flip()
 
 class Text:
-    def __init__(self, text_object, text_rect_object) -> None:
+    def __init__(self, text, text_object, text_rect_object) -> None:
+        self.text = text
         self.text_object = text_object
         self.text_rect_object = text_rect_object
         self.x = 0
         self.y = 0
     
+    text: str
     text_object: pygame.Surface
     text_rect_object: any
     x: int
@@ -93,11 +95,12 @@ while not exit:
         wave += 1
         word_list = word_generator.generate_words(3 + wave)
         print("The words are: " + word_list.__str__())
+        
         for word in word_list:
             text = font.render(word, True, white)
             text_rect = text.get_rect()
             text_rect.center = (width, height)
-            text_list.append(Text(text, text_rect))
+            text_list.append(Text(word, text, text_rect))
         
         index = 0
         for obj in text_list:
@@ -123,6 +126,12 @@ while not exit:
             print("Typed Word: " + typed_word)
             
         if typed_word == selected_word:
+            
+            # Delete the word from the screen
+            for text in text_list:
+                if text.text == typed_word:
+                    text_list.remove(text)
+
             print("\'" + selected_word + "\' successfully typed")
             word_list.remove(selected_word)
             selected_word_index = 0

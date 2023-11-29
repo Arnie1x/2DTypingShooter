@@ -4,7 +4,7 @@ import modules.word_list_generator as word_generator
 pygame.init() 
 
 # CREATING CANVAS 
-canvas = pygame.display.set_mode((500, 500)) 
+canvas = pygame.display.set_mode((850, 700))
 
 # TITLE OF CANVAS 
 pygame.display.set_caption("My Board") 
@@ -21,8 +21,44 @@ selected_word = None
 typed_word = ''
 selected_word_index = 0
 
+def show_menu():
+    # Load the background image
+    bg = pygame.image.load('assets/BackgroundImg.png')
+    bg = pygame.transform.scale(bg, (850, 700))
+
+    menu_font = pygame.font.Font(None, 36)
+    option1 = menu_font.render("1. Start Game", True, (255, 255, 255))
+    option2 = menu_font.render("2. Quit", True, (255, 255, 255))
+
+    # Calculate the positions of the menu options
+    option1_pos = option1.get_rect(center=(850 // 2, 700 // 2 - option1.get_height()))
+    option2_pos = option2.get_rect(center=(850 // 2, 700 // 2 + option2.get_height()))
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    return "start"
+                elif event.key == pygame.K_2:
+                    return "quit"
+
+        # Draw the background image
+        canvas.blit(bg, (0, 0))
+
+        # Draw the menu options
+        canvas.blit(option1, option1_pos)
+        canvas.blit(option2, option2_pos)
+
+        pygame.display.flip()
+
 # Main Game Loop
 while not exit:
+    menu_selection = show_menu()
+    if menu_selection == "quit":
+        break
     
     # Update the word list if empty
     if (len(word_list) == 0):
@@ -54,17 +90,14 @@ while not exit:
             typed_word = ''
             selected_word = None
 
-        
+
+
+
+
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             exit = True
         pygame.display.update()
     
     
-	# for event in pygame.event.get(): 
-	# 	if event.type == pygame.QUIT: 
-	# 		exit = True
-	# 	if event.type == pygame.KEYDOWN:
-	# 		if event.key == pygame.key.key_code("a"):
-	# 			print("A Key Pressed")
-	# pygame.display.update() 

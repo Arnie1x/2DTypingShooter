@@ -28,7 +28,8 @@ selected_word_index = 0
 
 # Constants
 white = (255, 255, 255)
-font = pygame.font.Font(None, 36)
+font_36 = pygame.font.Font(None, 36)
+font_24 = pygame.font.Font(None, 24)
 
 text_list = []
 
@@ -37,8 +38,8 @@ def show_menu():
     bg = pygame.image.load('assets/BackgroundImg.png')
     bg = pygame.transform.scale(bg, (width, height))
 
-    option1 = font.render("Press Space to Start", True, white)
-    option2 = font.render("Press Esc to Quit", True, white)
+    option1 = font_36.render("Press Space to Start", True, white)
+    option2 = font_36.render("Press Esc to Quit", True, white)
 
     # Calculate the positions of the menu options
     option1_pos = option1.get_rect(center=(width // 2, height // 2 - option1.get_height()))
@@ -97,7 +98,7 @@ while not exit:
         print("The words are: " + word_list.__str__())
         
         for word in word_list:
-            text = font.render(word, True, white)
+            text = font_24.render(word, True, white)
             text_rect = text.get_rect()
             text_rect.center = (width, height)
             text_list.append(Text(word, text, text_rect))
@@ -126,7 +127,7 @@ while not exit:
             print("Typed Word: " + typed_word)
             
         if typed_word == selected_word:
-            
+            pygame.time.delay(20)
             # Delete the word from the screen
             for text in text_list:
                 if text.text == typed_word:
@@ -138,12 +139,16 @@ while not exit:
             typed_word = ''
             selected_word = None
             
+    pygame.time.delay(50)
     for obj in text_list:
-        pygame.time.delay(10)
         obj.y = obj.y + 1;
         canvas.blit(obj.text_object, (obj.x, obj.y))
         if obj.y >= height:
             print("Game Over")
+    
+    # Render the currently typed word on the screen
+    typed_word_text = font_36.render(typed_word, True, white)
+    canvas.blit(typed_word_text, (round((width / 2) - typed_word_text.get_width() / 2), height - (typed_word_text.get_height() * 2)))
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

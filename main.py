@@ -3,6 +3,11 @@ import modules.word_list_generator as word_generator
 import random
 import math
 from pygame import mixer
+import json
+import modules.models as models
+import modules.functions as functions
+import modules.player as player
+import modules.input as input
 
 pygame.init() 
 # clock = pygame.time.Clock()
@@ -35,124 +40,15 @@ selected_word_index = 0
 
 # Constants
 white = (255, 255, 255)
-font_36 = pygame.font.Font(None, 36)
-font_24 = pygame.font.Font(None, 24)
+black = (0, 0, 0)
+font_24 = pygame.font.Font('assets/fonts/Poppins-Regular.ttf', 24)
+font_36 = pygame.font.Font('assets/fonts/Poppins-Regular.ttf', 36)
 
 text_list = []
 
 # Background Sound
 mixer.music.load('assets/audio/background.mp3')
 mixer.music.play(-1)
-
-def show_menu():
-    # Load the background image
-    bg = pygame.image.load('assets/menu-background.png')
-    bg = pygame.transform.scale(bg, (width, height))
-
-    option1 = font_36.render("Press Space to Start", True, white)
-    option2 = font_36.render("Press Esc to Quit", True, white)
-
-    # Calculate the positions of the menu options
-    option1_pos = option1.get_rect(center=(width // 2, height // 2 - option1.get_height()))
-    option2_pos = option2.get_rect(center=(width // 2, height // 2 + option2.get_height()))
-    
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-
-            elif event.type == pygame.KEYDOWN:
-                selection_sound = mixer.Sound('assets/audio/selection.wav')
-                selection_sound.play()
-                if event.key == pygame.K_SPACE:
-                    return "start"
-                elif event.key == pygame.K_ESCAPE:
-                    return "quit"
-
-        # Draw the background image
-        canvas.blit(bg, (0, 0))
-
-        # Draw the menu options
-        canvas.blit(option1, option1_pos)
-        canvas.blit(option2, option2_pos)
-
-        pygame.display.flip()
-
-class Text:
-    def __init__(self, text, text_object, text_rect_object) -> None:
-        self.text = text
-        self.text_object = text_object
-        self.text_rect_object = text_rect_object
-        self.x = 0
-        self.y = 0
-    
-    text: str
-    text_object: pygame.Surface
-    text_rect_object: any
-    x: int
-    y: int
-    
-def draw_game_over():
-    selection_sound = mixer.Sound('assets/audio/game-over.wav')
-    selection_sound.play()
-                
-    bg = pygame.image.load('assets/menu-background.png')
-    bg = pygame.transform.scale(bg, (width, height))
-
-    header = font_36.render("Game Over", True, white)
-    option1 = font_24.render("Press Space to Restart", True, white)
-    option2 = font_24.render("Press Esc to Quit", True, white)
-    score_text = font_24.render("Score: " + str(score), True, white)
-    wave_text = font_24.render("Wave Reached: " + str(last_wave), True, white)
-    
-    # Calculate the positions of the menu options
-    header_pos = header.get_rect(center=(width // 2, height // 2 - header.get_height() * 2))
-    option1_pos = option1.get_rect(center=(width // 2, height // 2 - option1.get_height()))
-    option2_pos = option2.get_rect(center=(width // 2, height // 2 + option2.get_height()))
-    score_pos = score_text.get_rect(center=(width // 2, height // 2 + score_text.get_height() * 3))
-    wave_pos = wave_text.get_rect(center=(width // 2, height // 2 + wave_text.get_height() * 4))
-    
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-
-            elif event.type == pygame.KEYDOWN:
-                selection_sound = mixer.Sound('assets/audio/selection.wav')
-                selection_sound.play()
-                if event.key == pygame.K_SPACE:
-                    return "start"
-                elif event.key == pygame.K_ESCAPE:
-                    return "quit"
-
-        # Draw the background image
-        canvas.blit(bg, (0, 0))
-
-        # Draw the menu options
-        canvas.blit(header, header_pos)
-        canvas.blit(option1, option1_pos)
-        canvas.blit(option2, option2_pos)
-        canvas.blit(score_text, score_pos)
-        canvas.blit(wave_text, wave_pos)
-        
-        pygame.display.flip()
-
-def draw_player():
-    playerImage = pygame.image.load('assets/jet.png')
-    player_X = width/2 - (playerImage.get_width() / 2)
-    player_Y = height - playerImage.get_height()
-    target_X = 900
-    target_Y = -1100
-    
-    for obj in text_list:
-        if obj.text == selected_word:
-            target_X = obj.x
-            target_Y = obj.y
-            
-    angle = math.degrees(360-(math.atan2(player_Y - target_Y, player_X - target_X)))
-    rotimage = pygame.transform.rotate(playerImage,angle)
-    canvas.blit(rotimage, (player_X, player_Y))
-
 
 
 def shoot_bullet():
@@ -180,12 +76,11 @@ def shoot_bullet():
     pos_X = lerp(target_X, bullet_X, lerp_value)
     pos_Y = lerp(target_Y, bullet_Y, lerp_value)
     canvas.blit(bullet, (pos_X, pos_Y))
-    
 
 # Main Game Loop
 while not exit:
     if start_menu:
-        menu_selection = show_menu()
+        menu_selection = functions.show_menu(canvas)
         if menu_selection == "start":
             start_menu = False
         if menu_selection == "quit":
@@ -193,7 +88,7 @@ while not exit:
             break
     
     if game_over:
-        game_over_menu = draw_game_over()
+        game_over_menu = functions.draw_game_over(score, last_wave, canvas)
         if game_over_menu == "start":
             game_over = False
         if game_over_menu == "quit":
@@ -202,7 +97,9 @@ while not exit:
     
     bg = pygame.image.load('assets/game-background.jpg')
     bg = pygame.transform.scale(bg, (width, height))
+    
     canvas.blit(bg, (0, 0))
+
     
     # Update the word list if empty
     if (len(word_list) == 0):
@@ -214,12 +111,12 @@ while not exit:
             text = font_24.render(word, True, white)
             text_rect = text.get_rect()
             text_rect.center = (width, height)
-            text_list.append(Text(word, text, text_rect))
+            text_list.append(models.Text(word, text, text_rect))
         
         index = 0
         for obj in text_list:
             index += 1
-            obj.x = random.randint(round(width/len(text_list) * (index - 1)), round((width - 50)/len(text_list) * index))
+            obj.x = random.randint(round(width/len(text_list) * (index - 1)), round((width - 100)/len(text_list) * index))
             obj.y = random.randint(-100, 0)
             canvas.blit(obj.text_object, (obj.x, obj.y))
     
@@ -269,17 +166,24 @@ while not exit:
         canvas.blit(obj.text_object, (obj.x, obj.y))
         if obj.y >= height:
             print("Game Over")
-            game_over = True
             word_list.clear()
             text_list.clear()
             last_wave = wave
+            functions.save_file(score, last_wave)
+            game_over = True
             wave = 0
     
     # Render the currently typed word on the screen
     typed_word_text = font_36.render(typed_word, True, white)
-    canvas.blit(typed_word_text, (round((width / 2) - typed_word_text.get_width() / 2), height - (typed_word_text.get_height() * 5)))
+    canvas.blit(typed_word_text, (round((width / 2) - typed_word_text.get_width() / 2), height - (typed_word_text.get_height() * 4)))
     
-    draw_player()
+    current_score = font_24.render("Score: " + str(score), True, white, black)
+    current_wave = font_24.render("Wave: " + str(wave), True, white, black)
+    
+    canvas.blit(current_score, (20, 20))
+    canvas.blit(current_wave, (width - 20 - current_wave.get_width(), 20))
+    
+    player.draw_player(text_list, selected_word, canvas)
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

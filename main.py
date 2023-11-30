@@ -2,8 +2,11 @@ import pygame
 import modules.word_list_generator as word_generator
 import random
 import math
+from pygame import mixer
 
 pygame.init() 
+# clock = pygame.time.Clock()
+# clock.tick(60)
 
 # CREATING CANVAS 
 width = 850
@@ -20,6 +23,8 @@ game_over = False
 
 # Initialize the Wave System for Words
 wave = 0
+last_wave = 0
+score = 0
 word_list = []
 # word_list = word_generator.generate_words(3 + wave)
 # print("The words are: " + word_list.__str__())
@@ -35,9 +40,13 @@ font_24 = pygame.font.Font(None, 24)
 
 text_list = []
 
+# Background Sound
+mixer.music.load('assets/audio/background.mp3')
+mixer.music.play(-1)
+
 def show_menu():
     # Load the background image
-    bg = pygame.image.load('assets/BackgroundImg.png')
+    bg = pygame.image.load('assets/menu-background.png')
     bg = pygame.transform.scale(bg, (width, height))
 
     option1 = font_36.render("Press Space to Start", True, white)
@@ -53,6 +62,8 @@ def show_menu():
                 pygame.quit()
 
             elif event.type == pygame.KEYDOWN:
+                selection_sound = mixer.Sound('assets/audio/selection.wav')
+                selection_sound.play()
                 if event.key == pygame.K_SPACE:
                     return "start"
                 elif event.key == pygame.K_ESCAPE:
@@ -82,17 +93,24 @@ class Text:
     y: int
     
 def draw_game_over():
-    bg = pygame.image.load('assets/BackgroundImg.png')
+    selection_sound = mixer.Sound('assets/audio/game-over.wav')
+    selection_sound.play()
+                
+    bg = pygame.image.load('assets/menu-background.png')
     bg = pygame.transform.scale(bg, (width, height))
 
     header = font_36.render("Game Over", True, white)
     option1 = font_24.render("Press Space to Restart", True, white)
     option2 = font_24.render("Press Esc to Quit", True, white)
+    score_text = font_24.render("Score: " + str(score), True, white)
+    wave_text = font_24.render("Wave Reached: " + str(last_wave), True, white)
     
     # Calculate the positions of the menu options
     header_pos = header.get_rect(center=(width // 2, height // 2 - header.get_height() * 2))
     option1_pos = option1.get_rect(center=(width // 2, height // 2 - option1.get_height()))
     option2_pos = option2.get_rect(center=(width // 2, height // 2 + option2.get_height()))
+    score_pos = score_text.get_rect(center=(width // 2, height // 2 + score_text.get_height() * 3))
+    wave_pos = wave_text.get_rect(center=(width // 2, height // 2 + wave_text.get_height() * 4))
     
     while True:
         for event in pygame.event.get():
@@ -100,6 +118,8 @@ def draw_game_over():
                 pygame.quit()
 
             elif event.type == pygame.KEYDOWN:
+                selection_sound = mixer.Sound('assets/audio/selection.wav')
+                selection_sound.play()
                 if event.key == pygame.K_SPACE:
                     return "start"
                 elif event.key == pygame.K_ESCAPE:
@@ -112,6 +132,8 @@ def draw_game_over():
         canvas.blit(header, header_pos)
         canvas.blit(option1, option1_pos)
         canvas.blit(option2, option2_pos)
+        canvas.blit(score_text, score_pos)
+        canvas.blit(wave_text, wave_pos)
         
         pygame.display.flip()
 
@@ -131,6 +153,35 @@ def draw_player():
     rotimage = pygame.transform.rotate(playerImage,angle)
     canvas.blit(rotimage, (player_X, player_Y))
 
+
+
+def shoot_bullet():
+    global lerp
+    def lerp(A, B, C):
+        return (C * A) + ((1-C) * B)
+        
+    
+    bullet = pygame.image.load('assets/bullet-small.png')
+    bullet_X = width/2 - (bullet.get_width() / 2)
+    bullet_Y = height - bullet.get_height()
+    target_X = 0
+    target_Y = 0
+
+    for obj in text_list:
+        if obj.text == selected_word:
+            target_X = obj.x
+            target_Y = obj.y
+            
+    # angle = math.degrees(360-(math.atan2(bullet_X - target_Y, bullet_Y - target_X)))
+    lerp_value = 0
+    while lerp_value < 1:
+        pygame.time.delay(20)
+        lerp_value += 0.1
+    pos_X = lerp(target_X, bullet_X, lerp_value)
+    pos_Y = lerp(target_Y, bullet_Y, lerp_value)
+    canvas.blit(bullet, (pos_X, pos_Y))
+    
+
 # Main Game Loop
 while not exit:
     if start_menu:
@@ -149,7 +200,9 @@ while not exit:
             game_over = False
             break
     
-    canvas.fill((0,0,0))
+    bg = pygame.image.load('assets/game-background.jpg')
+    bg = pygame.transform.scale(bg, (width, height))
+    canvas.blit(bg, (0, 0))
     
     # Update the word list if empty
     if (len(word_list) == 0):
@@ -166,7 +219,8 @@ while not exit:
         index = 0
         for obj in text_list:
             index += 1
-            obj.x = random.randint(round(width/len(text_list) * (index - 1)), round(width/len(text_list) * index))
+            obj.x = random.randint(round(width/len(text_list) * (index - 1)), round((width - 50)/len(text_list) * index))
+            obj.y = random.randint(-100, 0)
             canvas.blit(obj.text_object, (obj.x, obj.y))
     
     # Read Keyboard input for Key Presses
@@ -178,15 +232,25 @@ while not exit:
             selected_word_index += 1
             print("Selected Word: " + selected_word)
             print("Typed Word: " + typed_word)
+            score += 1
+            selection_sound = mixer.Sound('assets/audio/click.ogg')
+            selection_sound.play()
             break
         
     if selected_word is not None:
+        # bullet = shoot_bullet()
         if keys[pygame.key.key_code(selected_word[selected_word_index])] and len(selected_word) != selected_word_index:
             typed_word += selected_word[selected_word_index]
             selected_word_index += 1
+            score += 1
             print("Typed Word: " + typed_word)
+            selection_sound = mixer.Sound('assets/audio/click.ogg')
+            selection_sound.play()
             
         if typed_word == selected_word:
+            selection_sound = mixer.Sound('assets/audio/explosion.wav')
+            selection_sound.play()
+            
             pygame.time.delay(20)
             # Delete the word from the screen
             for text in text_list:
@@ -199,7 +263,7 @@ while not exit:
             typed_word = ''
             selected_word = None
             
-    pygame.time.delay(50)
+    pygame.time.delay(50 - (wave * 4))
     for obj in text_list:
         obj.y = obj.y + 1;
         canvas.blit(obj.text_object, (obj.x, obj.y))
@@ -208,6 +272,7 @@ while not exit:
             game_over = True
             word_list.clear()
             text_list.clear()
+            last_wave = wave
             wave = 0
     
     # Render the currently typed word on the screen

@@ -1,6 +1,7 @@
 import pygame 
 import modules.word_list_generator as word_generator
 import random
+import math
 
 pygame.init() 
 
@@ -114,6 +115,22 @@ def draw_game_over():
         
         pygame.display.flip()
 
+def draw_player():
+    playerImage = pygame.image.load('assets/jet.png')
+    player_X = width/2 - (playerImage.get_width() / 2)
+    player_Y = height - playerImage.get_height()
+    target_X = 900
+    target_Y = -1100
+    
+    for obj in text_list:
+        if obj.text == selected_word:
+            target_X = obj.x
+            target_Y = obj.y
+            
+    angle = math.degrees(360-(math.atan2(player_Y - target_Y, player_X - target_X)))
+    rotimage = pygame.transform.rotate(playerImage,angle)
+    canvas.blit(rotimage, (player_X, player_Y))
+
 # Main Game Loop
 while not exit:
     if start_menu:
@@ -195,7 +212,9 @@ while not exit:
     
     # Render the currently typed word on the screen
     typed_word_text = font_36.render(typed_word, True, white)
-    canvas.blit(typed_word_text, (round((width / 2) - typed_word_text.get_width() / 2), height - (typed_word_text.get_height() * 2)))
+    canvas.blit(typed_word_text, (round((width / 2) - typed_word_text.get_width() / 2), height - (typed_word_text.get_height() * 5)))
+    
+    draw_player()
     
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

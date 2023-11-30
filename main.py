@@ -15,6 +15,7 @@ pygame.display.set_caption("My Board")
 # Used to maintain the Game Loop
 exit = False
 start_menu = True
+game_over = False
 
 # Initialize the Wave System for Words
 wave = 0
@@ -78,6 +79,40 @@ class Text:
     text_rect_object: any
     x: int
     y: int
+    
+def draw_game_over():
+    bg = pygame.image.load('assets/BackgroundImg.png')
+    bg = pygame.transform.scale(bg, (width, height))
+
+    header = font_36.render("Game Over", True, white)
+    option1 = font_24.render("Press Space to Restart", True, white)
+    option2 = font_24.render("Press Esc to Quit", True, white)
+    
+    # Calculate the positions of the menu options
+    header_pos = header.get_rect(center=(width // 2, height // 2 - header.get_height() * 2))
+    option1_pos = option1.get_rect(center=(width // 2, height // 2 - option1.get_height()))
+    option2_pos = option2.get_rect(center=(width // 2, height // 2 + option2.get_height()))
+    
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    return "start"
+                elif event.key == pygame.K_ESCAPE:
+                    return "quit"
+
+        # Draw the background image
+        canvas.blit(bg, (0, 0))
+
+        # Draw the menu options
+        canvas.blit(header, header_pos)
+        canvas.blit(option1, option1_pos)
+        canvas.blit(option2, option2_pos)
+        
+        pygame.display.flip()
 
 # Main Game Loop
 while not exit:
@@ -87,6 +122,14 @@ while not exit:
             start_menu = False
         if menu_selection == "quit":
             start_menu = False
+            break
+    
+    if game_over:
+        game_over_menu = draw_game_over()
+        if game_over_menu == "start":
+            game_over = False
+        if game_over_menu == "quit":
+            game_over = False
             break
     
     canvas.fill((0,0,0))
@@ -145,6 +188,10 @@ while not exit:
         canvas.blit(obj.text_object, (obj.x, obj.y))
         if obj.y >= height:
             print("Game Over")
+            game_over = True
+            word_list.clear()
+            text_list.clear()
+            wave = 0
     
     # Render the currently typed word on the screen
     typed_word_text = font_36.render(typed_word, True, white)

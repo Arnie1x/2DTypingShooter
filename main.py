@@ -4,6 +4,8 @@ import random
 import math
 
 pygame.init() 
+# clock = pygame.time.Clock()
+# clock.tick(60)
 
 # CREATING CANVAS 
 width = 850
@@ -37,7 +39,7 @@ text_list = []
 
 def show_menu():
     # Load the background image
-    bg = pygame.image.load('assets/BackgroundImg.png')
+    bg = pygame.image.load('assets/menu-background.png')
     bg = pygame.transform.scale(bg, (width, height))
 
     option1 = font_36.render("Press Space to Start", True, white)
@@ -82,7 +84,7 @@ class Text:
     y: int
     
 def draw_game_over():
-    bg = pygame.image.load('assets/BackgroundImg.png')
+    bg = pygame.image.load('assets/menu-background.png')
     bg = pygame.transform.scale(bg, (width, height))
 
     header = font_36.render("Game Over", True, white)
@@ -131,6 +133,35 @@ def draw_player():
     rotimage = pygame.transform.rotate(playerImage,angle)
     canvas.blit(rotimage, (player_X, player_Y))
 
+
+
+def shoot_bullet():
+    global lerp
+    def lerp(A, B, C):
+        return (C * A) + ((1-C) * B)
+        
+    
+    bullet = pygame.image.load('assets/bullet-small.png')
+    bullet_X = width/2 - (bullet.get_width() / 2)
+    bullet_Y = height - bullet.get_height()
+    target_X = 0
+    target_Y = 0
+
+    for obj in text_list:
+        if obj.text == selected_word:
+            target_X = obj.x
+            target_Y = obj.y
+            
+    # angle = math.degrees(360-(math.atan2(bullet_X - target_Y, bullet_Y - target_X)))
+    lerp_value = 0
+    while lerp_value < 1:
+        pygame.time.delay(20)
+        lerp_value += 0.1
+    pos_X = lerp(target_X, bullet_X, lerp_value)
+    pos_Y = lerp(target_Y, bullet_Y, lerp_value)
+    canvas.blit(bullet, (pos_X, pos_Y))
+    
+
 # Main Game Loop
 while not exit:
     if start_menu:
@@ -149,7 +180,9 @@ while not exit:
             game_over = False
             break
     
-    canvas.fill((0,0,0))
+    bg = pygame.image.load('assets/game-background.jpg')
+    bg = pygame.transform.scale(bg, (width, height))
+    canvas.blit(bg, (0, 0))
     
     # Update the word list if empty
     if (len(word_list) == 0):
@@ -181,6 +214,7 @@ while not exit:
             break
         
     if selected_word is not None:
+        # bullet = shoot_bullet()
         if keys[pygame.key.key_code(selected_word[selected_word_index])] and len(selected_word) != selected_word_index:
             typed_word += selected_word[selected_word_index]
             selected_word_index += 1

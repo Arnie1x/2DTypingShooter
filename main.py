@@ -3,6 +3,7 @@ import modules.word_list_generator as word_generator
 import random
 import math
 from pygame import mixer
+import json
 
 pygame.init() 
 # clock = pygame.time.Clock()
@@ -181,6 +182,31 @@ def shoot_bullet():
     pos_Y = lerp(target_Y, bullet_Y, lerp_value)
     canvas.blit(bullet, (pos_X, pos_Y))
     
+def save_file():
+    high_score = 0
+    highest_wave = 0
+    
+    f = open('save_file.json')
+    in_file = json.load(f)
+    
+    if in_file['high_score']:
+        high_score = in_file['high_score']
+        highest_wave = in_file['highest_wave']
+
+    if score > high_score:
+        high_score = score
+    
+    if last_wave > highest_wave:
+        highest_wave = last_wave
+        
+    data = {
+        "high_score": high_score,
+        "highest_wave": highest_wave,
+	}
+    out_file = open('save_file.json', 'w')
+    json.dump(data, out_file, indent = 6)
+    f.close()
+    out_file.close()
 
 # Main Game Loop
 while not exit:
@@ -269,6 +295,7 @@ while not exit:
         canvas.blit(obj.text_object, (obj.x, obj.y))
         if obj.y >= height:
             print("Game Over")
+            save_file()
             game_over = True
             word_list.clear()
             text_list.clear()

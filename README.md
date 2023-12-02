@@ -1,9 +1,9 @@
-# 2D Typing Shooter Game
+# SpaceType
 
 ## Overview
 
-This is a simple typing game created using Pygame, a Python library for game development. The game challenges players to type displayed words correctly within a certain time frame.
-Completing words suuccessfully leads to the words on screen boing shot at and be destroyed from the screen
+SpaceType is a 2D Typing Shooter Game created using Pygame, a Python library for game development. The game challenges players to type the displayed words correctly within a certain time frame.
+Completing words successfully leads to the words on screen being shot at and be destroyed from the screen
 
 ## Features
 
@@ -38,6 +38,14 @@ pip install -r requirements.txt
 4. Run the game
 ```bash
 python main.py
+```
+5. Running using PyBag
+
+- To make the game tun using PyBag, you must ensure that PyBag is set in your Environment Variables PATH
+- Then, run the application with the following command:
+```bash
+cd ../
+pybag spacetype
 ```
 
 
